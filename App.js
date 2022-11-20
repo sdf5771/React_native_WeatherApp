@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react';
 import * as Location from "expo-location";
 import {OPEN_WEATHER_MAP_API_KEY} from '@env';
 import { StatusBar } from 'expo-status-bar';
-import {StyleSheet, ActivityIndicator, ScrollView, Dimensions, Text, TextInput, View, Button} from 'react-native';
+import {StyleSheet, Image, ActivityIndicator, ScrollView, Dimensions, Text, TextInput, View, Button} from 'react-native';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -18,12 +18,20 @@ function CalendarViewWeather({dayData}){
     setTimezone(dayData.dt_txt);
     setWeather(dayData.weather[0].main);
     setSubWeather(dayData.weather[0].description);
+    console.log(dayData);
+    console.log(`http://openweathermap.org/img/wn/${dayData.weather[0].icon}.png`)
   }, [])
 
   return (
       <View style={styles.day}>
-        <Text style={styles.temp}>{days}</Text>
+        <Text style={styles.temp}>{Math.round(dayData.main.temp)}°</Text>
         <Text style={styles.description}>{weather}</Text>
+        <Image
+            style={styles.weatherIcon}
+            source={{
+              uri: `http://openweathermap.org/img/wn/${dayData.weather[0].icon}.png`,
+            }}
+        />
         <Text>{subWeather}</Text>
         <Text style={styles.timezone}>{timezone}</Text>
       </View>
@@ -48,7 +56,7 @@ export default function App() {
     const {coords:{latitude, longitude}} = await Location.getCurrentPositionAsync({accuracy: 5});
     const location = await Location.reverseGeocodeAsync({latitude, longitude}, {useGoogleMaps: false});
     // console.log(`https://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=${OPEN_WEATHER_MAP_API_KEY}`);
-    const response = await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=${OPEN_WEATHER_MAP_API_KEY}`)
+    const response = await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=${OPEN_WEATHER_MAP_API_KEY}&units=metric`)
     const json = await response.json();
 
     //it's api key or api error
@@ -108,12 +116,13 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "600",
   },
-  weather: {
-
-  },
   day: {
     width: SCREEN_WIDTH,
     alignItems: 'center',
+  },
+  weatherIcon: {
+    width: 80,
+    height: 80,
   },
   temp : {
     marginTop: 50,
